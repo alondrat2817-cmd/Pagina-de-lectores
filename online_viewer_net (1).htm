@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Se Lee en México - Club de Lectura Nacional</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            lavender: '#E6E6FA',
+                            blush: '#FFD1DC',
+                            sage: '#E2EFCB',
+                            mint: '#D8F3DC',
+                            cream: '#FFF9F0',
+                            lilac: '#DCD0FF',
+                            blue: '#D0E1FD',
+                            peach: '#FFE5D9',
+                            card: '#FAF8F5',
+                            darkCard: '#232530',
+                            darkBg: '#1A1B23',
+                            darkSidebar: '#13141C'
+                        }
+                    },
+                    fontFamily: {
+                        georgia: ['Georgia', 'serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Book, Pencil & Feather Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for Wheel Win -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F7F5F0;
+        }
+        .font-serif-georgia {
+            font-family: 'Georgia', serif;
+        }
+        /* Custom scrollbar styled in Discord pastel fashion */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(180, 170, 210, 0.4);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(160, 150, 200, 0.7);
+        }
+        
+        /* Mobile Frame Simulator */
+        .mobile-device-frame {
+            box-shadow: 0 25px 50px -12px rgba(90, 80, 120, 0.25);
+            border: 10px solid #2B2D38;
+            border-radius: 38px;
+        }
+
+        /* Wheel Spin Animation CSS */
+        .wheel-container {
+            transition: transform 4s cubic-bezier(0.15, 0.99, 0.18, 1);
+        }
+
+        /* Masonry Multi-Column Layout for Pinterest Feed */
+        .pinterest-grid {
+            column-count: 1;
+            column-gap: 1.25rem;
+        }
+        @media (min-width: 640px) {
+            .pinterest-grid { column-count: 2; }
+        }
+        @media (min-width: 1024px) {
+            .pinterest-grid { column-count: 3; }
+        }
+        .pinterest-card {
+            break-inside: avoid;
+            margin-bottom: 1.25rem;
+        }
+    </style>
+</head>
+<body class="text-slate-700 dark:text-slate-200 bg-[#F4F1EA] dark:bg-slate-950 min-h-screen transition-colors duration-300">
+
+    <!-- TOP HEADER: Controls & Mobile View Switcher -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-purple-100 dark:border-slate-800 px-4 py-2.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <!-- Brand Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-200 via-pink-200 to-indigo-200 dark:from-purple-900 dark:to-indigo-950 flex items-center justify-center text-purple-700 dark:text-purple-300 font-serif-georgia font-bold text-lg shadow-sm border border-purple-200/50">
+                    <i class="fa-solid fa-book-open text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif-georgia font-normal text-lg sm:text-xl text-slate-800 dark:text-slate-100 tracking-wide">
+                        Se Lee en México
+                    </h1>
+                    <span class="text-[11px] text-purple-600/80 dark:text-purple-300 block -mt-1 font-medium">Club Nacional de Lectura & Comunidad</span>
+                </div>
+            </div>
+
+            <!-- Viewport Switcher -->
+            <div class="flex items-center gap-1 bg-purple-50 dark:bg-slate-800 p-1 rounded-xl text-xs font-medium border border-purple-100 dark:border-slate-700">
+                <button onclick="setViewMode('desktop')" id="btn-view-desktop" class="px-3 py-1.5 rounded-lg transition-all bg-white dark:bg-slate-700 shadow-sm text-purple-700 dark:text-purple-300">
+                    <i class="fa-solid fa-desktop mr-1.5"></i> Vista Web
+                </button>
+                <button onclick="setViewMode('mobile')" id="btn-view-mobile" class="px-3 py-1.5 rounded-lg transition-all text-slate-500 hover:text-purple-700 dark:text-slate-400">
+                    <i class="fa-solid fa-mobile-screen mr-1.5"></i> Vista App Móvil
+                </button>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center gap-2">
+                <button onclick="openRegisterModal()" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-200/70 hover:bg-purple-300/80 dark:bg-purple-900/50 dark:hover:bg-purple-800/70 text-purple-900 dark:text-purple-100 text-xs font-medium transition">
+                    <i class="fa-solid fa-pen-nib text-xs"></i>
+                    <span id="nav-user-label">Unirme a la Comunidad</span>
+                </button>
+                <button onclick="toggleDarkMode()" class="w-8 h-8 rounded-xl bg-purple-100/60 dark:bg-slate-800 text-purple-700 dark:text-purple-300 flex items-center justify-center text-xs hover:bg-purple-200 transition">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTAINER WORKSPACE -->
+    <main class="max-w-7xl mx-auto p-2 sm:p-4">
+        <div id="app-viewport-wrapper" class="w-full">
+            
+            <!-- DISCORD-INSPIRED INTERFACE LAYOUT -->
+            <div id="discord-app-frame" class="bg-white dark:bg-[#1A1B23] rounded-2xl border border-purple-100 dark:border-slate-800/80 shadow-lg overflow-hidden flex flex-col md:flex-row min-h-[780px]">
+                
+                <!-- 1. LEFT SERVER BAR (Icons sidebar) -->
+                <aside class="w-full md:w-16 bg-purple-50/80 dark:bg-[#13141C] border-b md:border-b-0 md:border-r border-purple-100 dark:border-slate-800/60 flex md:flex-col items-center justify-between p-2.5 gap-2 shrink-0">
+                    <div class="flex md:flex-col items-center gap-2.5">
+                        <!-- Main Server Badge -->
+                        <button class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-300 to-pink-300 dark:from-purple-800 dark:to-pink-900 text-purple-900 dark:text-purple-100 flex items-center justify-center shadow-sm font-serif-georgia font-bold text-base hover:rounded-xl transition-all" title="Se Lee en México - Club Principal">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                        </button>
+                        <div class="hidden md:block w-8 h-[2px] bg-purple-200/70 dark:bg-slate-800 rounded"></div>
+                        
+                        <!-- Navigation Quick Server Icons -->
+                        <button onclick="switchChannel('feed')" id="server-btn-feed" class="server-icon-btn w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-300 flex items-center justify-center hover:bg-purple-200/60 dark:hover:bg-purple-900/40 transition-all shadow-sm" title="Reseña Mensual #resena">
+                            <i class="fa-solid fa-pencil"></i>
+                        </button>
+                        <button onclick="switchChannel('calendar')" id="server-btn-calendar" class="server-icon-btn w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:bg-purple-200/60 dark:hover:bg-purple-900/40 transition-all shadow-sm" title="Reunión Meet #calendario">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </button>
+                        <button onclick="switchChannel('wheel')" id="server-btn-wheel" class="server-icon-btn w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:bg-purple-200/60 dark:hover:bg-purple-900/40 transition-all shadow-sm" title="Ruleta del Libro #ruleta">
+                            <i class="fa-solid fa-dharmachakra"></i>
+                        </button>
+                        <button onclick="switchChannel('stats')" id="server-btn-stats" class="server-icon-btn w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:bg-purple-200/60 dark:hover:bg-purple-900/40 transition-all shadow-sm" title="Trofeos y Estadísticas #premios">
+                            <i class="fa-solid fa-award"></i>
+                        </button>
+                    </div>
+
+                    <!-- User Profile Quick Toggle -->
+                    <div class="hidden md:flex flex-col items-center gap-2">
+                        <button onclick="openRegisterModal()" class="w-9 h-9 rounded-full bg-pink-200 dark:bg-pink-900/60 text-pink-700 dark:text-pink-300 flex items-center justify-center text-xs font-semibold hover:ring-2 ring-purple-300 transition" id="user-avatar-badge">
+                            <i class="fa-solid fa-user text-xs"></i>
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- 2. CHANNEL SIDEBAR (Discord Style Navigation) -->
+                <aside class="w-full md:w-60 bg-[#F9F7F2] dark:bg-[#1E202A] border-b md:border-b-0 md:border-r border-purple-100 dark:border-slate-800/60 p-3 shrink-0">
+                    <div class="flex items-center justify-between pb-3 mb-2 border-b border-purple-100 dark:border-slate-800">
+                        <span class="font-serif-georgia font-bold text-slate-800 dark:text-slate-100 text-sm tracking-wide">
+                            🇲🇽 Club Se Lee en México
+                        </span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-medium">Nov 2026</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Channel Category 1 -->
+                        <div>
+                            <div class="text-[10px] uppercase font-bold tracking-wider text-purple-400 dark:text-purple-300 mb-1 px-2">
+                                Canales Principales
+                            </div>
+                            <nav class="space-y-0.5 text-xs font-medium">
+                                <button onclick="switchChannel('feed')" id="chan-feed" class="channel-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-purple-200/50 dark:bg-purple-950/60 text-purple-900 dark:text-purple-200">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-hashtag text-purple-400 text-xs"></i> resena-mensual</span>
+                                    <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                                </button>
+                                <button onclick="switchChannel('calendar')" id="chan-calendar" class="channel-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-purple-100/50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-hashtag text-purple-400 text-xs"></i> reunion-meet-mes</span>
+                                </button>
+                                <button onclick="switchChannel('wheel')" id="chan-wheel" class="channel-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-purple-100/50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-hashtag text-purple-400 text-xs"></i> ruleta-del-libro</span>
+                                </button>
+                            </nav>
+                        </div>
+
+                        <!-- Channel Category 2 -->
+                        <div>
+                            <div class="text-[10px] uppercase font-bold tracking-wider text-purple-400 dark:text-purple-300 mb-1 px-2">
+                                Comunidad & Premios
+                            </div>
+                            <nav class="space-y-0.5 text-xs font-medium">
+                                <button onclick="switchChannel('stats')" id="chan-stats" class="channel-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-purple-100/50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400">
+                                    <span class="flex items-center gap-2"><i class="fa-solid fa-hashtag text-purple-400 text-xs"></i> trofeos-y-estadisticas</span>
+                                </button>
+                            </nav>
+                        </div>
+
+                        <!-- Read of the Month Quick Card -->
+                        <div class="mt-4 p-3 rounded-xl bg-gradient-to-br from-pink-100/80 via-purple-100/60 to-blue-100/80 dark:from-slate-800 dark:to-purple-950/60 border border-purple-200/50 dark:border-purple-800/40">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-300 block mb-1">
+                                <i class="fa-solid fa-feather mr-1"></i> Libro Noviembre 2026
+                            </span>
+                            <h4 class="font-serif-georgia font-bold text-xs text-slate-800 dark:text-slate-100" id="sidebar-book-title">
+                                "Las Batallas en el Desierto"
+                            </h4>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-2">José Emilio Pacheco • México</p>
+                            <button onclick="switchChannel('wheel')" class="w-full text-[10px] py-1 bg-white dark:bg-purple-900 text-purple-700 dark:text-purple-200 rounded-lg font-semibold shadow-xs hover:shadow transition">
+                                Editar Ruleta de Libros
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- 3. MAIN CONTENT VIEWPORT (Channel views load here) -->
+                <section class="flex-1 bg-slate-50/50 dark:bg-[#1A1B23] p-4 sm:p-6 overflow-y-auto">
+                    
+                    <!-- CHANNEL 1: Reseña Mensual Feed (#resena-mensual) -->
+                    <div id="view-feed" class="space-y-6">
+                        <!-- Channel Top Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-purple-100 dark:border-slate-800">
+                            <div>
+                                <h2 class="font-serif-georgia text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <span># resena-mensual</span>
+                                    <i class="fa-solid fa-pencil text-sm text-purple-400"></i>
+                                </h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Reseñas y reflexiones estéticas de nuestra lectura de noviembre en todo México.</p>
+                            </div>
+                            <button onclick="openNewPostModal()" class="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-purple-200 hover:bg-purple-300 dark:bg-purple-800 dark:hover:bg-purple-700 text-purple-900 dark:text-purple-100 text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus text-xs"></i> Publicar Mi Reseña
+                            </button>
+                        </div>
+
+                        <!-- Pinterest Masonry Layout Container -->
+                        <div class="pinterest-grid" id="pinterest-feed-container">
+                            <!-- Cards inserted via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- CHANNEL 2: Monthly Google Meet Calendar (#reunion-meet-mes) -->
+                    <div id="view-calendar" class="hidden space-y-6">
+                        <div class="pb-4 border-b border-purple-100 dark:border-slate-800">
+                            <h2 class="font-serif-georgia text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <span># reunion-meet-mes</span>
+                                <i class="fa-solid fa-video text-sm text-pink-400"></i>
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Nos reunimos una vez al mes por Google Meet para debatir la lectura de noviembre.</p>
+                        </div>
+
+                        <!-- Main Event Hero Card -->
+                        <div class="p-6 rounded-2xl bg-gradient-to-r from-purple-100 via-pink-100 to-indigo-100 dark:from-purple-950/70 dark:via-slate-900 dark:to-indigo-950/70 border border-purple-200 dark:border-purple-800/50 shadow-sm relative overflow-hidden">
+                            <div class="max-w-xl space-y-4 relative z-10">
+                                <span class="px-3 py-1 rounded-full bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-bold uppercase tracking-wider inline-block">
+                                    Sesión Inaugural Noviembre 2026
+                                </span>
+                                <h3 class="font-serif-georgia text-2xl font-bold text-slate-900 dark:text-slate-100">
+                                    Conversatorio sobre "Las Batallas en el Desierto"
+                                </h3>
+                                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                                    Un espacio suave, en colores pastel y ambiente cálido, donde lectores de los 32 estados de la República comparten sus impresiones sobre la CDMX de los años 40.
+                                </p>
+                                
+                                <!-- Meeting Details Grid -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2 text-xs">
+                                    <div class="flex items-center gap-2.5 bg-white/70 dark:bg-slate-800/70 p-2.5 rounded-xl">
+                                        <i class="fa-solid fa-calendar-day text-purple-500 text-base"></i>
+                                        <div>
+                                            <span class="block text-[10px] text-slate-400">Fecha</span>
+                                            <span class="font-bold text-slate-700 dark:text-slate-200">Sábado 28 de Noviembre, 2026</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2.5 bg-white/70 dark:bg-slate-800/70 p-2.5 rounded-xl">
+                                        <i class="fa-solid fa-clock text-pink-500 text-base"></i>
+                                        <div>
+                                            <span class="block text-[10px] text-slate-400">Hora</span>
+                                            <span class="font-bold text-slate-700 dark:text-slate-200">7:00 PM (Hora Centro CDMX)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Countdown Timer -->
+                                <div class="bg-white/80 dark:bg-slate-900/80 p-4 rounded-xl border border-purple-100 dark:border-slate-800 flex items-center justify-between">
+                                    <span class="text-xs font-bold text-purple-900 dark:text-purple-300">Tiempo restante para la reunión:</span>
+                                    <div class="flex gap-3 text-center">
+                                        <div><span class="font-mono text-lg font-bold text-slate-800 dark:text-slate-100" id="timer-days">24</span><span class="block text-[9px] text-slate-400">Días</span></div>
+                                        <div><span class="font-mono text-lg font-bold text-slate-800 dark:text-slate-100" id="timer-hours">06</span><span class="block text-[9px] text-slate-400">Hrs</span></div>
+                                        <div><span class="font-mono text-lg font-bold text-slate-800 dark:text-slate-100" id="timer-mins">30</span><span class="block text-[9px] text-slate-400">Min</span></div>
+                                    </div>
+                                </div>
+
+                                <!-- Join Meet Button -->
+                                <div class="flex flex-wrap gap-3 pt-2">
+                                    <a href="https://meet.google.com" target="_blank" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs shadow-md transition flex items-center gap-2">
+                                        <i class="fa-solid fa-video"></i> Unirse a la Sesión por Meet
+                                    </a>
+                                    <button onclick="toggleRSVP()" id="rsvp-btn" class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-purple-200 dark:border-slate-700 transition">
+                                        <i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Confirmar Asistencia (RSVP)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calendar Month Grid -->
+                        <div class="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-purple-100 dark:border-slate-800">
+                            <h3 class
